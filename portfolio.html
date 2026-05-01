@@ -380,7 +380,10 @@ footer{position:relative;z-index:10;text-align:center;padding:2rem 1.5rem 2.5rem
 
 <div class="toast" id="toast"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Message sent! I'll get back to you soon.</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+emailjs.init('KXb3ETxKnTsyKRQ7n');
+
 function goTo(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
 function toggleMenu(){
   const h=document.getElementById('hamburger'),m=document.getElementById('mobileMenu');
@@ -436,21 +439,24 @@ async function handleSubmit(e){
     message:form.querySelector('[name="message"]')?.value.trim()||''
   };
 
+  if(!payload.first_name||!payload.email||!payload.message){
+    if(t){t.textContent='Please fill in the required fields before sending.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4000);}
+    return;
+  }
+
   try{
-    const res=await fetch('/api/contact',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+    await emailjs.send('service_brdn49p','template_yz6cnp9',{
+      first_name:payload.first_name,
+      last_name:payload.last_name,
+      email:payload.email,
+      subject:payload.subject,
+      message:payload.message,
+      to_email:'sayantika3001@gmail.com'
     });
-    const data=await res.json();
-    if(!res.ok){
-      if(t){t.textContent='Error: '+(data.error||'Unknown error')+(data.detail?' - '+data.detail:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5000);}
-      return;
-    }
     if(t){t.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Message sent! I\'ll get back to you soon.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
     form.reset();
   }catch(_err){
-    if(t){t.textContent='Network error - server may be offline';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500);}
+    if(t){t.textContent='EmailJS could not send the message. Please check your EmailJS keys or network connection.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5000);}
   }
 }
 const canvas=document.getElementById('particles');
