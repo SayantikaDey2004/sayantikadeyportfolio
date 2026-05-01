@@ -234,7 +234,7 @@ footer{position:relative;z-index:10;text-align:center;padding:2rem 1.5rem 2.5rem
   <div class="sb-socials">
     <a href="https://github.com/SayantikaDey2004" target="_blank" class="sb-social-btn"><span class="sb-tooltip">GitHub</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg></a>
     <a href="https://www.linkedin.com/in/sayantika-dey-0318a3375" target="_blank" class="sb-social-btn"><span class="sb-tooltip">LinkedIn</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-    <a href="sayantika3001@gmail.com" class="sb-social-btn"><span class="sb-tooltip">Email</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+    <a class="sb-social-btn" onclick="window.location.href='mailto:sayantika3001@gmail.com'; return false;"><span class="sb-tooltip">Email</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
     <a href="tel:+919007563614" class="sb-social-btn"><span class="sb-tooltip">+91 9007563614</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.19 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>
   </div>
   <div class="sb-line sb-line-bottom"></div>
@@ -384,7 +384,12 @@ footer{position:relative;z-index:10;text-align:center;padding:2rem 1.5rem 2.5rem
 <script>
 emailjs.init('KXb3ETxKnTsyKRQ7n');
 
-function goTo(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+function goTo(id){
+  const navIds=['about','skills','projects'],btns=document.querySelectorAll('.nav-links-island button');
+  const idx=navIds.indexOf(id);
+  if(idx>=0&&btns[idx]){btns.forEach(b=>b.classList.remove('active'));btns[idx].classList.add('active');moveSlider(btns[idx]);}
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+}
 function toggleMenu(){
   const h=document.getElementById('hamburger'),m=document.getElementById('mobileMenu');
   if(!h||!m)return;
@@ -403,7 +408,11 @@ function moveSlider(btn){
   slider.style.left=(br.left-rr.left+br.width*.15)+'px';
   slider.style.width=(br.width*.7)+'px';
 }
-window.addEventListener('load',()=>{const f=document.querySelector('.nav-links-island button');if(f)moveSlider(f)});
+function initSlider(){const f=document.querySelector('.nav-links-island button');if(f){setTimeout(()=>moveSlider(f),100);}}
+window.addEventListener('load',initSlider);
+window.addEventListener('DOMContentLoaded',initSlider);
+setTimeout(initSlider,200);
+let lastActiveBtn=null;
 const allSections=['hero','about','skills','projects','contact'];
 window.addEventListener('scroll',()=>{
   const n=document.getElementById('nav');
@@ -411,12 +420,22 @@ window.addEventListener('scroll',()=>{
   n.classList.toggle('scrolled',window.scrollY>50);
   const navIds=['about','skills','projects'],btns=n.querySelectorAll('.nav-links-island button');
   if(btns.length&&n.querySelector('.nav-links-island')?.offsetParent!==null){
-    navIds.forEach((id,i)=>{
-      const el=document.getElementById(id);if(!el||!btns[i])return;
+    let activeBtn=null;
+    let closestDist=Infinity;
+    for(let i=0;i<navIds.length;i++){
+      const el=document.getElementById(navIds[i]);
+      if(!el||!btns[i])continue;
       const r=el.getBoundingClientRect();
-      if(r.top<=120&&r.bottom>=120){btns[i].classList.add('active');moveSlider(btns[i]);}
-      else btns[i].classList.remove('active');
-    });
+      if(r.top<200&&r.top>-r.height/2){
+        const dist=Math.abs(r.top-80);
+        if(dist<closestDist){closestDist=dist;activeBtn=btns[i];}
+      }
+    }
+    if(activeBtn!==lastActiveBtn){
+      lastActiveBtn=activeBtn;
+      btns.forEach(b=>b.classList.remove('active'));
+      if(activeBtn){activeBtn.classList.add('active');moveSlider(activeBtn);}
+    }
   }
   const heroEl=document.getElementById('hero');
   if(heroEl){const hb=heroEl.getBoundingClientRect().bottom;document.querySelectorAll('.sidebar').forEach(s=>s.classList.toggle('hidden',hb<0));}
